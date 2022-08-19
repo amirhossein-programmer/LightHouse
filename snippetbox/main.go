@@ -1,44 +1,61 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 )
+
 func home(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
 		http.NotFound(w, r)
 		return
 	}
-	w.Write([]byte("displaying home page"))
+	w.Write([]byte("Hello from Snippetbox..."))
 }
-func sinppetView(w http.ResponseWriter, r *http.Request) {
+func snippetViwe(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/snippet/view" {
 		http.NotFound(w, r)
 		return
 	}
-	w.Write([]byte("displaying snippet view..."))
-}
-func snippetCreate(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
-		w.Header().Set("Allow", "POST")
-		// w.WriteHeader(405)
-		// w.Write([]byte("Method not alowed"))
-		// http.Error(w, "Method not alowed", 405)
-		http.Error(w, http.MethodPost , http.StatusMethodNotAllowed)
-		return
-	}
-	if r.URL.Path != "/snippet/create" 	{
+	id, err := strconv.Atoi(r.URL.Query().Get("id"))
+	if err != nil || id < 1 {
 		http.NotFound(w, r)
 		return
 	}
-	w.Write([]byte("displaying snippet create..."))
+	fmt.Fprintf(w, "Display a specific snippet with ID %d...", id)
+	w.Write([]byte("Displayed specific snippet..."))
+
 }
-func main(){
-	mux:=http.NewServeMux()
-	mux.HandleFunc("/",home)
-	mux.HandleFunc("/snippet/view",sinppetView)
-	mux.HandleFunc("/snippet/create",snippetCreate)
-	log.Println("starring server on port :4000")
-	err:=http.ListenAndServe(":4000",mux)
+
+func snippetCreate(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/snippet/create" {
+		http.NotFound(w, r)
+		return
+	}
+	if r.Method != http.MethodPost {
+		w.Header().Set("allow", http.MethodPost)
+		// w.WriteHeader(405)
+		// w.Write([]byte("Method Not Allowed "))
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	w.Write([]byte("Create new sippet..."))
+}
+func main() {
+	fmt.Println("Hello World!")
+	// mux := http.NewServeMux()
+	// mux.HandleFunc("/", home)
+	// mux.HandleFunc("/snippet/view", snippetViwe)
+	// mux.HandleFunc("/snippet/create", snippetCreate)
+	http.HandleFunc("/", home)
+	http.HandleFunc("/snippet/view", snippetViwe)
+	http.HandleFunc("/snippet/create", snippetCreate)
+	log.Println("starting server in port :4000")
+	// err := http.ListenAndServe(":4000", mux)
+	err := http.ListenAndServe(":4000", nil)
+
 	log.Fatal(err)
+
 }
